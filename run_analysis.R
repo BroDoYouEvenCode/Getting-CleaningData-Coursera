@@ -1,24 +1,16 @@
-# Below is what this script does
-# 1. Merges the training and the test sets to create one data set.
-# 2. Extracts only the measurements on the mean and standard deviation for each measurement.
-# 3. Uses descriptive activity names to name the activities in the data set
-# 4. Appropriately labels the data set with descriptive variable names.
-# 5. From the data set in step 4, creates a second, independent tidy data set with the average
-# of each variable for each activity and each subject.
-
-# load packages data.table and reshape2
+# loading packages
 if (!require("pacman")) {
     install.packages("pacman")
 }
 pacman::p_load(data.table, reshape2, gsubfn)
 
-# get data from zip file
+# get data from dataset.zip file
 path <- getwd()
 url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 download.file(url, file.path(path, "data.zip"))
 unzip(zipfile = "data.zip")
 
-# load activity_labels and features
+# load activity_labels.txt and features.txt
 activityLabels <- fread(
     file.path(path, "UCI HAR Dataset/activity_labels.txt"),
     col.names = c("classLabels", "activityNames")
@@ -29,7 +21,7 @@ features <-fread(
         col.names = c("index", "featureNames")
     )
 
-# extracting mean and std from features
+# extracting mean and std from features.txt
 featuresNeeded <- grep("(mean|std)\\(\\)", features[, featureNames])
 measurements <- features[featuresNeeded, featureNames]
 measurements <- gsubfn(
@@ -45,8 +37,8 @@ measurements <- gsubfn(
     ),
     measurements
 )
+
 # load train data
-## read in train, filtering based on features needed, using with=False to retain data.frame class
 train <- fread(file.path(path, "/UCI HAR Dataset/train/X_train.txt"))[, featuresNeeded, with = FALSE]
 setnames(train, colnames(train), measurements) # change column name based on measurement
 
